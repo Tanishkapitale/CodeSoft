@@ -1,0 +1,126 @@
+import random
+
+# The Tic-Tac-Toe board is represented as a list of lists
+# Each element can be 'X', 'O', or an empty space (' ')
+
+def print_board(board):
+    for row in board:
+        print(" | ".join(row))
+        print("-" * 9)
+
+def evaluate(board):
+    # Check rows, columns, and diagonals for a win or draw
+    for row in board:
+        if row.count(row[0]) == 3 and row[0] != ' ':
+            return row[0]
+    
+    for col in range(3):
+        if board[0][col] == board[1][col] == board[2][col] and board[0][col] != ' ':
+            return board[0][col]
+    
+    if board[0][0] == board[1][1] == board[2][2] and board[0][0] != ' ':
+        return board[0][0]
+    
+    if board[0][2] == board[1][1] == board[2][0] and board[0][2] != ' ':
+        return board[0][2]
+    
+    if any(' ' in row for row in board):
+        return None  # Game not over yet (still empty spaces)
+    else:
+        return 'Draw'  # Game is a draw
+
+def minimax(board, depth, is_maximizing, alpha, beta):
+    result = evaluate(board)
+    
+    if result is not None:
+        if result == 'X':
+            return 1
+        elif result == 'O':
+            return -1
+        else:
+            return 0  # Draw
+    
+    if is_maximizing:
+        max_eval = -float('inf')
+        for i in range(3):
+            for j in range(3):
+                if board[i][j] == ' ':
+                    board[i][j] = 'X'
+                    eval = minimax(board, depth + 1, False, alpha, beta)
+                    board[i][j] = ' '
+                    max_eval = max(max_eval, eval)
+                    alpha = max(alpha, eval)
+                    if beta <= alpha:
+                        break  # Prune
+        return max_eval
+    else:
+        min_eval = float('inf')
+        for i in range(3):
+            for j in range(3):
+                if board[i][j] == ' ':
+                    board[i][j] = 'O'
+                    eval = minimax(board, depth + 1, True, alpha, beta)
+                    board[i][j] = ' '
+                    min_eval = min(min_eval, eval)
+                    beta = min(beta, eval)
+                    if beta <= alpha:
+                        break  # Prune
+        return min_eval
+
+def best_move(board):
+    best_score = -float('inf')
+    move = None
+    
+    for i in range(3):
+        for j in range(3):
+            if board[i][j] == ' ':
+                board[i][j] = 'X'
+                score = minimax(board, 0, False, -float('inf'), float('inf'))
+                board[i][j] = ' '
+                if score > best_score:
+                    best_score = score
+                    move = (i, j)
+    
+    return move
+
+def main():
+    board = [[' ' for _ in range(3)] for _ in range(3)]
+    
+    print("Welcome to Tic-Tac-Toe!")
+    print_board(board)
+    
+    while True:
+        user_row = int(input("Enter the row (0, 1, 2): "))
+        user_col = int(input("Enter the column (0, 1, 2): "))
+        
+        if board[user_row][user_col] != ' ':
+            print("That spot is already taken. Try again.")
+            continue
+        
+        board[user_row][user_col] = 'O'
+        print_board(board)
+        
+        result = evaluate(board)
+        if result is not None:
+            if result == 'Draw':
+                print("It's a draw!")
+            else:
+                print(f"{result} wins!")
+            break
+        
+        ai_row, ai_col = best_move(board)
+        board[ai_row][ai_col] = 'X'
+        print("AI's move:")
+        print_board(board)
+        
+        result = evaluate(board)
+        if result is not None:
+            if result == 'Draw':
+                print("It's a draw!")
+            else:
+                print(f"{result} wins!")
+            break
+
+if __name__ == "__main__":
+    main()
+
